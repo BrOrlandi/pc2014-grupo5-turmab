@@ -1,0 +1,14 @@
+Como compilar:
+
+Para PI
+gcc piseq.c -o piseq
+
+gcc pipara.c -o pipara -lpthread
+
+Para Scholes
+gcc scholesseq.c -o scholesseq -lm
+./scholesseq < entrada-blackscholes
+
+gcc scholespara.c -o scholespara -lm -lpthread
+./scholespara < entrada-blackscholes
+
