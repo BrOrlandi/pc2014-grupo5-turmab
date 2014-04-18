@@ -74,11 +74,11 @@ int main(int argc, char **argv){
         for(i = 1;i<size;i++){
             if(i == size - 1){
                 for(j=rank*(n/size);j<n-(rank*(n/size)+(n/size));j++){
-                    MPI_Recv(&C[i], p, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
+                    MPI_Recv(&C[j], p, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
                 }
             }else{
                 for(j=rank*(n/size);j<(rank*(n/size)+(n/size));j++){
-                    MPI_Recv(&C[i], p, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
+                    MPI_Recv(&C[j], p, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
                 }
             }
         }
@@ -98,12 +98,15 @@ int main(int argc, char **argv){
         //Calcula parte da matriz
         if(rank == size-1){
             //Se for ultimo processo
-            for(i=rank*(n/size);i<(rank*(n/size)+(n/size));i++){
+            for(i=rank*(n/size);i<n-(rank*(n/size)+(n/size));i++){
                 for(j=0;j<p;j++){
                     for(k=0;k<m;k++){
                         C[i][j] += A[i][k] * B[k][j];
                     }
                 }
+            }
+            for(i=rank*(n/size);i<n-(rank*(n/size)+(n/size));i++){
+                MPI_Send(&C[i], p, MPI_INT, 0, 1, MPI_COMM_WORLD);
             }
         }else{
             for(i=rank*(n/size);i<(rank*(n/size)+(n/size));i++){
@@ -113,12 +116,13 @@ int main(int argc, char **argv){
                     }
                 }
             }
-        }
-        for(i=rank*(n/size);i<(rank*(n/size)+(n/size));i++){
+            for(i=rank*(n/size);i<(rank*(n/size)+(n/size));i++){
                 MPI_Send(&C[i], p, MPI_INT, 0, 1, MPI_COMM_WORLD);
+            }
         }
-	}
 
+	}
+    printf("%d\n",rank);
     //Finaliza MPI
     MPI_Finalize();
     return 0;
