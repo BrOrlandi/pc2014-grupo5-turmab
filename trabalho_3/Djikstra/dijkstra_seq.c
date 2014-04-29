@@ -3,7 +3,8 @@
 
 #define INFINITY 100000
 
-int n, sp = 0;
+	// Before: sp = -1
+int n, sp = INFINITY;
 
 int minimumDistance(int dist[n], int set[n]){
 
@@ -20,34 +21,36 @@ int minimumDistance(int dist[n], int set[n]){
 
 void solution(int dist[n], int node){
 
-	int i;
-	int lesser = INFINITY, index = -1;
+			// Before: lesser = INFINITY
+	int i, lesser = 0, index = -1;
 
 	//printf("\nVertex\tDistance from source: %d\n", node+1);
 	for(i = 0; i < n; i++){
-		//if(dist[i] == INFINITY)
-		//	printf("%d\tinf\n", i+1);
+	//	if(dist[i] == INFINITY)
+	//		printf("%d\tinf\n", i+1);
 
-		//else {
-		//	printf("%d\t%d\n", i+1, dist[i]);
+	//	else {
+	//		printf("%d\t%d\n", i+1, dist[i]);
 
-			if(dist[i] < lesser && dist[i] > 0){
+			// Before: dist[i] < lesser && dist[i] > 0
+			if(dist[i] > lesser && dist[i] < INFINITY){
 				lesser = dist[i];
 				index = i;
 			}
-		//}
+	//	}
 	}
 
 	if(index != -1 && lesser < INFINITY && lesser > 0){
-		//printf("\n-- Shortest path -- \n");
-		//printf("Vertex: %d - Weight: %d\n\n", index+1, lesser);
+	//	printf("\n-- Shortest path -- \n");
+	//	printf("Vertex: %d - Weight: %d\n\n", index+1, lesser);
 
-		if(lesser > sp)
+		// Before: lesser > sp
+		if(lesser < sp)
 			sp = lesser;
 	}
 
 	//else
-		//printf("\nNo shortest path!\n\n");
+	//	printf("\nNo shortest path!\n\n");
 }
 
 void djikstra(int graph[n][n], int node){

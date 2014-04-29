@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include "mpi.h"
 
-#define INFINITY 100000
+#define INFINITY 1000000
 
-int n, sp = 0;
+	// Before: sp = -1
+int n, sp = INFINITY;
 
 int minimumDistance(int dist[n], int set[n]){
 
@@ -20,7 +21,8 @@ int minimumDistance(int dist[n], int set[n]){
 
 void solution(int dist[n], int node, int rank){
 
-	int i, lesser = INFINITY, index = -1;
+			// Before: lesser = INFINITY
+	int i, lesser = 0, index = -1;
 
 	//printf("\nVertex\tDistance from source: %d (Rank: %d)\n", node+1, rank);
 	for(i = 0; i < n; i++){
@@ -30,7 +32,8 @@ void solution(int dist[n], int node, int rank){
 		//else {
 		//	printf("%d\t%d (rank: %d)\n", i+1, dist[i], rank);
 
-			if(dist[i] < lesser && dist[i] > 0){
+			// Before: dist[i] < lesser && dist[i] > 0
+			if(dist[i] > lesser && dist[i] < INFINITY){
 				lesser = dist[i];
 				index = i;
 			}
@@ -41,7 +44,8 @@ void solution(int dist[n], int node, int rank){
 		//printf("\n-- Shortest path -- Rank: %d \n", rank);
 		//printf("Vertex: %d - Weight: %d - Rank: %d\n\n", index+1, lesser, rank);
 
-		if(lesser > sp)
+		// Before: lesser > sp
+		if(lesser < sp)
 			sp = lesser;
 	}
 
