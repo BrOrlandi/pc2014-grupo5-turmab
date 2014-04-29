@@ -3,11 +3,12 @@
 
 #define INFINITY 100000
 
-int n;
+int n, sp = 0;
 
 int minimumDistance(int dist[n], int set[n]){
 
-	int minimum = INFINITY, m_index, i;
+	int minimum = INFINITY, m_index;
+	int i;
 
 	for(i = 0; i < n; i++){
 		if(!set[i] && dist[i] <= minimum)
@@ -19,36 +20,41 @@ int minimumDistance(int dist[n], int set[n]){
 
 void solution(int dist[n], int node){
 
-	int i, lesser = INFINITY, index = -1;
+	int i;
+	int lesser = INFINITY, index = -1;
 
-	printf("\nVertex\tDistance from source: %d\n", node+1);
+	//printf("\nVertex\tDistance from source: %d\n", node+1);
 	for(i = 0; i < n; i++){
-		if(dist[i] == INFINITY)
-			printf("%d\tinf\n", i+1);
+		//if(dist[i] == INFINITY)
+		//	printf("%d\tinf\n", i+1);
 
-		else {
-			printf("%d\t%d\n", i+1, dist[i]);
+		//else {
+		//	printf("%d\t%d\n", i+1, dist[i]);
 
 			if(dist[i] < lesser && dist[i] > 0){
 				lesser = dist[i];
 				index = i;
 			}
-		}
+		//}
 	}
 
 	if(index != -1 && lesser < INFINITY && lesser > 0){
-		printf("\n-- Shortest path -- \n");
-		printf("Vertex: %d - Weight: %d\n\n", index+1, lesser);
+		//printf("\n-- Shortest path -- \n");
+		//printf("Vertex: %d - Weight: %d\n\n", index+1, lesser);
+
+		if(lesser > sp)
+			sp = lesser;
 	}
 
-	else
-		printf("\nNo shortest path!\n\n");
+	//else
+		//printf("\nNo shortest path!\n\n");
 }
 
 void djikstra(int graph[n][n], int node){
 
 	int dist[n], set[n];
-	int min, i, j;
+	int min;
+	int i, j;
 
 	for(i = 0; i < n; i++)
 		dist[i] = INFINITY, set[i] = 0;
@@ -84,17 +90,20 @@ int main(int argc, char *argv[]){
 	for(i = 0; i < m; i++){
 		scanf(" %d %d %d", &aux_i, &aux_j, &aux_graph);
 		graph[aux_i-1][aux_j-1] = aux_graph;
+		graph[aux_j-1][aux_i-1] = aux_graph;
  	}
 
-	printf("\nGraph:\n");
-	for(i = 0; i < n; i++){
-		for(j = 0; j < n; j++)
-			printf("%d ", graph[i][j]);
-		printf("\n");
-	}
+	//printf("\nGraph:\n");
+	//for(i = 0; i < n; i++){
+	//	for(j = 0; j < n; j++)
+	//		printf("%d ", graph[i][j]);
+	//	printf("\n");
+	//}
 
 	for(i = 0; i < n; i++)
 	    djikstra(graph, i);
+
+	printf("%d\n", sp);
 
 	return 0;
 }

@@ -4,7 +4,7 @@
 
 #define INFINITY 100000
 
-int n, m;
+int n, sp = 0;
 
 int minimumDistance(int dist[n], int set[n]){
 
@@ -22,28 +22,31 @@ void solution(int dist[n], int node, int rank){
 
 	int i, lesser = INFINITY, index = -1;
 
-	printf("\nVertex\tDistance from source: %d (Rank: %d)\n", node+1, rank);
+	//printf("\nVertex\tDistance from source: %d (Rank: %d)\n", node+1, rank);
 	for(i = 0; i < n; i++){
-		if(dist[i] == INFINITY)
-			printf("%d\tinf (rank: %d)\n", i+1, rank);
+		//if(dist[i] == INFINITY)
+		//	printf("%d\tinf (rank: %d)\n", i+1, rank);
 
-		else {
-			printf("%d\t%d (rank: %d)\n", i+1, dist[i], rank);
+		//else {
+		//	printf("%d\t%d (rank: %d)\n", i+1, dist[i], rank);
 
 			if(dist[i] < lesser && dist[i] > 0){
 				lesser = dist[i];
 				index = i;
 			}
-		}
+		//}
 	}
 
 	if(index != -1 && lesser < INFINITY && lesser > 0){
-		printf("\n-- Shortest path -- Rank: %d \n", rank);
-		printf("Vertex: %d - Weight: %d - Rank: %d\n\n", index+1, lesser, rank);
+		//printf("\n-- Shortest path -- Rank: %d \n", rank);
+		//printf("Vertex: %d - Weight: %d - Rank: %d\n\n", index+1, lesser, rank);
+
+		if(lesser > sp)
+			sp = lesser;
 	}
 
-	else
-		printf("\nNo shortest path! Rank: %d\n\n", rank);
+//	else
+	//	printf("\nNo shortest path! Rank: %d\n\n", rank);
 }
 
 void djikstra(int graph[n][n], int node, int rank){
@@ -72,7 +75,7 @@ void djikstra(int graph[n][n], int node, int rank){
 
 int main(int argc, char *argv[]){
 
-	int tag, rank, size, m, i, j, aux_i, aux_j, aux_graph;
+	int index = 1, m, tag, rank, size, i, j, aux_i, aux_j, aux_graph, final_sp;
 	MPI_Status status;
 
 	scanf(" %d %d", &n, &m);
@@ -83,7 +86,7 @@ int main(int argc, char *argv[]){
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(graph, n * n, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&sp, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 	int graph[n][n];
 
@@ -95,11 +98,12 @@ int main(int argc, char *argv[]){
 		for(i = 0; i < m; i++){
 			scanf(" %d %d %d", &aux_i, &aux_j, &aux_graph);
 			graph[aux_i-1][aux_j-1] = aux_graph;
+			graph[aux_j-1][aux_i-1] = aux_graph;
 	 	}
 
 		for(i = 1; i < size; i++)
 			MPI_Send(graph, n * n, MPI_INT, i, 1, MPI_COMM_WORLD);
-
+			
 		if(n % 2)
 			djikstra(graph, n-1, 0);
 	}
@@ -110,7 +114,12 @@ int main(int argc, char *argv[]){
 	for(i = (n/size) * rank; i < (n/size) + ((n/size) * rank); i++)
 	    djikstra(graph, i, rank);
 
-	MPI_Finalize();
+	MPI_Reduce(&sp, &final_sp, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+
+	if(rank == 0)
+		printf("%d\n", final_sp);
+
+	MPI_Finalize();	
 
 	return 0;
 }
