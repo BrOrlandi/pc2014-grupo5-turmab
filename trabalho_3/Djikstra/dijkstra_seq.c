@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define INFINITY 100000
+#define INFINITY 10000000000
 
 	// Before: sp = -1
 int n, sp = INFINITY;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
 
 	int m, i, j, aux_i, aux_j, aux_graph;
 
-	scanf(" %d %d", &n, &m);
+	scanf("%d %d ", &n, &m);
 
 	int graph[n][n];
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
 			graph[i][j] = 0;
 
 	for(i = 0; i < m; i++){
-		scanf(" %d %d %d", &aux_i, &aux_j, &aux_graph);
+		scanf("%d %d %d ", &aux_i, &aux_j, &aux_graph);
 		graph[aux_i-1][aux_j-1] = aux_graph;
 		graph[aux_j-1][aux_i-1] = aux_graph;
  	}
