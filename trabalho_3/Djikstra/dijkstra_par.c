@@ -2,15 +2,15 @@
 #include <stdio.h>
 #include "mpi.h"
 
-#define INFINITY 10000000000
+#define INFINITY 1000000
 
-	// Before: sp = -1
 int n, sp = INFINITY;
 
 int minimumDistance(int dist[n], int set[n]){
 
 	int minimum = INFINITY, m_index, i;
 
+	// Descobrimento da distância entre um vértice e seus adjacentes
 	for(i = 0; i < n; i++){
 		if(!set[i] && dist[i] <= minimum)
 			minimum = dist[i], m_index = i;
@@ -21,36 +21,20 @@ int minimumDistance(int dist[n], int set[n]){
 
 void solution(int dist[n], int node, int rank){
 
-			// Before: lesser = INFINITY
 	int i, lesser = 0, index = -1;
 
-	//printf("\nVertex\tDistance from source: %d (Rank: %d)\n", node+1, rank);
+	// A solução envolve a escolha da menor distância entre as maiores
 	for(i = 0; i < n; i++){
-		//if(dist[i] == INFINITY)
-		//	printf("%d\tinf (rank: %d)\n", i+1, rank);
-
-		//else {
-		//	printf("%d\t%d (rank: %d)\n", i+1, dist[i], rank);
-
-			// Before: dist[i] < lesser && dist[i] > 0
-			if(dist[i] > lesser && dist[i] < INFINITY){
-				lesser = dist[i];
-				index = i;
-			}
-		//}
+		if(dist[i] > lesser && dist[i] < INFINITY){
+			lesser = dist[i];
+			index = i;
+		}
 	}
 
 	if(index != -1 && lesser < INFINITY && lesser > 0){
-		//printf("\n-- Shortest path -- Rank: %d \n", rank);
-		//printf("Vertex: %d - Weight: %d - Rank: %d\n\n", index+1, lesser, rank);
-
-		// Before: lesser > sp
 		if(lesser < sp)
 			sp = lesser;
 	}
-
-//	else
-	//	printf("\nNo shortest path! Rank: %d\n\n", rank);
 }
 
 void djikstra(int graph[n][n], int node, int rank){
@@ -58,16 +42,20 @@ void djikstra(int graph[n][n], int node, int rank){
 	int dist[n], set[n];
 	int min, i, j;
 
+	// Inicialização das distâncias
 	for(i = 0; i < n; i++)
 		dist[i] = INFINITY, set[i] = 0;
 
 	dist[node] = 0;
 
 	for(i = 0; i < n-1; i++){
+
+		// Calculo da distância mínima
 		min = minimumDistance(dist, set);
 
 		set[min] = 1;
 
+		// Descoberta do melhor caminho entre dois vértices
 		for(j = 0; j < n; j++){
 			if(!set[j] && graph[min][j] && dist[min] != INFINITY && dist[min] + graph[min][j] < dist[j])
 				dist[j] = dist[min] + graph[min][j];
@@ -82,46 +70,65 @@ int main(int argc, char *argv[]){
 	int index = 1, m, tag, rank, size, i, j, aux_i, aux_j, aux_graph, final_sp;
 	MPI_Status status;
 
-	scanf("%d %d ", &n, &m);
+	// Leitura do número de vértices e arestas
+	scanf(" %d %d", &n, &m);
 
 	MPI_Init(&argc, &argv);
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+	// Broadcast do número de vértices para todos os nós para a alocação da matriz
 	MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Bcast(&sp, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-	int graph[n][n];
-
-	if(rank == 0){
-		for(i = 0; i < n; i++)
-			for(j = 0; j < n; j++)
-				graph[i][j] = 0;
-
-		for(i = 0; i < m; i++){
-			scanf("%d %d %d ", &aux_i, &aux_j, &aux_graph);
-			graph[aux_i-1][aux_j-1] = aux_graph;
-			graph[aux_j-1][aux_i-1] = aux_graph;
-	 	}
-
-		for(i = 1; i < size; i++)
-			MPI_Send(graph, n * n, MPI_INT, i, 1, MPI_COMM_WORLD);
-			
-		if(n % 2)
-			djikstra(graph, n-1, 0);
+	// Verificão necessária caso o usuário extrapole o número de processos permitido para um determinado número de vértices
+	if(size > n){
+		if(rank == 0)
+			printf("Erro! Total de processos não pode ser maior que o total de vértices!\n");
 	}
 
-	else
-		MPI_Recv(graph, n * n, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+	else {
+		// Broadcast da variável correspondente ao caminho de um vértice até seu ponto mais distante
+		MPI_Bcast(&sp, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		int graph[n][n];
 
-	for(i = (n/size) * rank; i < (n/size) + ((n/size) * rank); i++)
-	    djikstra(graph, i, rank);
+		if(rank == 0){
 
-	MPI_Reduce(&sp, &final_sp, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+			// Inicialização do grafo
+			for(i = 0; i < n; i++)
+				for(j = 0; j < n; j++)
+					graph[i][j] = 0;
 
-	if(rank == 0)
-		printf("%d\n", final_sp);
+			// Leitura do peso de cada aresta e seus respectivos vértices
+			for(i = 0; i < m; i++){
+				scanf(" %d %d %d", &aux_i, &aux_j, &aux_graph);
+				graph[aux_i-1][aux_j-1] = aux_graph;
+				graph[aux_j-1][aux_i-1] = aux_graph;
+		 	}
+
+			// Envio da matriz de vértices para cada nó
+			for(i = 1; i < size; i++)
+				MPI_Send(graph, n * n, MPI_INT, i, 1, MPI_COMM_WORLD);
+			
+			// Caso o número de vértices for ímpar, o nó 0 se responsabiliza em computar o vértice restante
+			if(n % 2)
+				djikstra(graph, n-1, 0);
+		}
+
+		// Recebimento da matriz de vértices do nó 0
+		else
+			MPI_Recv(graph, n * n, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+
+		// Chamada da função, para cada nó, para o cálculo do menor caminho partindo de cada vértice
+		for(i = (n/size) * rank; i < (n/size) + ((n/size) * rank); i++)
+			djikstra(graph, i, rank);
+
+		// Redução das variáveis 'sp' para a escolha do seu valor mínimo
+		MPI_Reduce(&sp, &final_sp, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+
+		if(rank == 0)
+			printf("%d\n", final_sp);
+	}
 
 	MPI_Finalize();	
 

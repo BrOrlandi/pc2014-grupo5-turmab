@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define INFINITY 10000000000
+#define INFINITY 10000000
 
-	// Before: sp = -1
 int n, sp = INFINITY;
 
 int minimumDistance(int dist[n], int set[n]){
@@ -11,6 +10,7 @@ int minimumDistance(int dist[n], int set[n]){
 	int minimum = INFINITY, m_index;
 	int i;
 
+	// Descobrimento da distância entre um vértice e seus adjacentes
 	for(i = 0; i < n; i++){
 		if(!set[i] && dist[i] <= minimum)
 			minimum = dist[i], m_index = i;
@@ -21,36 +21,20 @@ int minimumDistance(int dist[n], int set[n]){
 
 void solution(int dist[n], int node){
 
-			// Before: lesser = INFINITY
 	int i, lesser = 0, index = -1;
 
-	//printf("\nVertex\tDistance from source: %d\n", node+1);
+	// A solução envolve a escolha da menor distância entre as maiores
 	for(i = 0; i < n; i++){
-	//	if(dist[i] == INFINITY)
-	//		printf("%d\tinf\n", i+1);
-
-	//	else {
-	//		printf("%d\t%d\n", i+1, dist[i]);
-
-			// Before: dist[i] < lesser && dist[i] > 0
-			if(dist[i] > lesser && dist[i] < INFINITY){
-				lesser = dist[i];
-				index = i;
-			}
-	//	}
+		if(dist[i] > lesser && dist[i] < INFINITY){
+			lesser = dist[i];
+			index = i;
+		}
 	}
 
 	if(index != -1 && lesser < INFINITY && lesser > 0){
-	//	printf("\n-- Shortest path -- \n");
-	//	printf("Vertex: %d - Weight: %d\n\n", index+1, lesser);
-
-		// Before: lesser > sp
 		if(lesser < sp)
 			sp = lesser;
 	}
-
-	//else
-	//	printf("\nNo shortest path!\n\n");
 }
 
 void djikstra(int graph[n][n], int node){
@@ -59,16 +43,20 @@ void djikstra(int graph[n][n], int node){
 	int min;
 	int i, j;
 
+	// Inicialização das distâncias
 	for(i = 0; i < n; i++)
 		dist[i] = INFINITY, set[i] = 0;
 
 	dist[node] = 0;
 
 	for(i = 0; i < n-1; i++){
+
+		// Calculo da distância mínima
 		min = minimumDistance(dist, set);
 
 		set[min] = 1;
 
+		// Descoberta do melhor caminho entre dois vértices
 		for(j = 0; j < n; j++){
 			if(!set[j] && graph[min][j] && dist[min] != INFINITY && dist[min] + graph[min][j] < dist[j])
 				dist[j] = dist[min] + graph[min][j];
@@ -82,27 +70,24 @@ int main(int argc, char *argv[]){
 
 	int m, i, j, aux_i, aux_j, aux_graph;
 
-	scanf("%d %d ", &n, &m);
+	// Leitura do número de vértices e arestas
+	scanf(" %d %d", &n, &m);
 
 	int graph[n][n];
 
+	// Inicialização do grafo
 	for(i = 0; i < n; i++)
 		for(j = 0; j < n; j++)
 			graph[i][j] = 0;
 
+	// Leitura do peso de cada aresta e seus respectivos vértices
 	for(i = 0; i < m; i++){
-		scanf("%d %d %d ", &aux_i, &aux_j, &aux_graph);
+		scanf(" %d %d %d", &aux_i, &aux_j, &aux_graph);
 		graph[aux_i-1][aux_j-1] = aux_graph;
 		graph[aux_j-1][aux_i-1] = aux_graph;
  	}
 
-	//printf("\nGraph:\n");
-	//for(i = 0; i < n; i++){
-	//	for(j = 0; j < n; j++)
-	//		printf("%d ", graph[i][j]);
-	//	printf("\n");
-	//}
-
+	// Chamada da função para o cálculo do menor caminho partindo de cada vértice
 	for(i = 0; i < n; i++)
 	    djikstra(graph, i);
 
