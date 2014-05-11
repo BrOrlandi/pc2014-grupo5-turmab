@@ -1,3 +1,11 @@
+/*
+	Dijkstra - versão paralela
+	Autores: Bruno Henrique Orlandi		NUSP: 7573378
+			 Gustavo Blanco				NUSP: 7656234
+			 Nihey Takizawa				NUSP: 7572912
+			 Rafael Ribaldo				NUSP: 6792270
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "mpi.h"
