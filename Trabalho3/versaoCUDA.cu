@@ -19,6 +19,7 @@ __global__ void convolucao(int *output, int *input, int width, int height){
         // Coluna atual
         int idxX = blockIdx.x * TILE_WIDTH + threadIdx.x;
 
+		// utilizacao de memoria compartilhada para diminuir o tempo de acesso aos pixels
         __shared__ int sharedMemory[BLOCK_WIDTH][BLOCK_WIDTH];
 
         int offset = TAM_FILTRO / 2;
@@ -26,9 +27,13 @@ __global__ void convolucao(int *output, int *input, int width, int height){
         int row_i = idxY - offset;
         int col_i = idxX - offset;
 
+		// Loop que percorre todos os 3 canais de cor para realizar a convolucao
         for(int channelIndex = 0; channelIndex < 3; channelIndex++){
+
+				// calculo de indice necessario, pois houve a transformacao da matriz da imagem em um vetor
                 int index = (row_i * width + col_i) * 3 + channelIndex;
 
+				// verifica se esta dentro dos limites
                 if((row_i >= 0) && (row_i < height) &&
                         (col_i >= 0) && (col_i < width))
                                 sharedMemory[sharedY][sharedX] = input[index];
@@ -36,6 +41,7 @@ __global__ void convolucao(int *output, int *input, int width, int height){
                 else
                         sharedMemory[sharedY][sharedX] = 0;
 
+				// espera a matriz ser populada
                 __syncthreads();
 
                 int total = 0;
@@ -97,16 +103,13 @@ int main(int argc, char *argv[]){
 
         cudaMemcpy(dev_input, input, N * sizeof(int), cudaMemcpyHostToDevice);
 
+		// dimensoes padrao de block e grid
         dim3 dimBlock(BLOCK_WIDTH, BLOCK_WIDTH);
         dim3 dimGrid((totalX-1) / TILE_WIDTH + 1, (totalY-1) / TILE_WIDTH + 1);
 
         convolucao<<<dimGrid, dimBlock>>>(dev_output, dev_input, totalX, totalY);
 
         cudaMemcpy(outputFinal, dev_output, N * sizeof(int), cudaMemcpyDeviceToHost);
-
-        //Imprimi matriz
-//      for(int i = 0; i < N; i++)
-//              printf("%d\n", outputFinal[i]);
 
         //Salva no arquivo de saida
         char str_final[100];
